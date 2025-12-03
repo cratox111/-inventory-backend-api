@@ -1,0 +1,18 @@
+Package              Version
+-------------------- ----------
+
+fastapi              0.123.5
+fastapi-cli          0.0.16
+fastapi-cloud-cli    0.5.2
+passlib              1.7.4
+pip                  24.0
+pydantic             2.12.5
+pydantic_core        2.41.5
+pydantic-extra-types 2.10.6
+pydantic-settings    2.12.0
+pymongo              4.15.5
+Pygments             2.19.2
+python-dotenv        1.2.1
+python-jose          3.5.0
+python-multipart     0.0.20
+uvicorn              0.38.0
