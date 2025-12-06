@@ -12,3 +12,9 @@ class UserForm(BaseModel):
     email: str
     password: str
     type: str
+
+class UserResponse(BaseModel):
+    _id: str
+    name: str
+    email: str
+    type: str
