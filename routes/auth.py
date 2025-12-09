@@ -14,19 +14,17 @@ load_dotenv()
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 crypt = CryptContext(schemes=['argon2'])
-oauth = OAuth2PasswordBearer('/login')
+oauth = OAuth2PasswordBearer('/auth/login')
 SECRET = os.getenv('SECRECT_KEY')
 
 def shearUser(key, value):
     user = users.find_one({key: value})
 
-    if user:
-        user['_id'] = str(user['_id'])
-        del user['_id']
-        return UserDB(**user)
-    else:
+    if not user:
         return None
-
+        
+    user['_id'] = str(user['_id'])
+    return UserDB(**user)
 
 
 @router.post('/register', status_code=201)
@@ -49,15 +47,16 @@ async def register(data: UserForm):
 
 @router.post('/login', status_code=200)
 async def login(form: OAuth2PasswordRequestForm = Depends()):
-    user = shearUser('email', form.username)
-
-    if not user:
+    
+    if not shearUser('email', form.username):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='User no existe'
         )
     
-    if not crypt.verify(form.password, user['password']):
+    user = shearUser('email', form.username)
+
+    if not crypt.verify(form.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail='COntraseña incorrecta'
@@ -66,7 +65,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     token = jwt.encode({
         'sub': user.email,
         'exp': datetime.utcnow() + timedelta(minutes=30)
-    }, SECRET, algorithms='HS256')
+    }, SECRET, algorithm='HS256')
 
     return {
         'acces_token': token,
