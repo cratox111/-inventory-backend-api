@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from .auth import oauth
+from .auth import auth_user
 
 from db.client import products
 from db.models.model_item import ProductsResponse, ProductsForm
@@ -18,7 +18,7 @@ def shearProduct(key, value):
 
 
 @router.post('/create', status_code=201)
-async def create(data: ProductsForm, token = Depends(oauth)):
+async def create(data: ProductsForm, token = Depends(auth_user)):
     if shearProduct(key='name', value=data.name):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -31,7 +31,7 @@ async def create(data: ProductsForm, token = Depends(oauth)):
     return 'Producto añadido'
 
 @router.get('/get', status_code=200)
-async def get_products(token = Depends(oauth)):
+async def get_products(token = Depends(auth_user)):
     products_list = []
     for p in products.find():
         p['_id'] = str(p['_id'])
@@ -41,7 +41,7 @@ async def get_products(token = Depends(oauth)):
     return products_list
 
 @router.get('/alert', status_code=200)
-async def get_product(token = Depends(oauth)):
+async def get_product(token = Depends(auth_user)):
     products_list = []
     for p in products.find():
         p['_id'] = str(p['_id'])
@@ -52,7 +52,7 @@ async def get_product(token = Depends(oauth)):
     return products_list
 
 @router.get('/get/{name}', status_code=200)
-async def alert(name:str, token = Depends(oauth)):
+async def alert(name:str, token = Depends(auth_user)):
     product = products.find_one({'name': name})
 
     if not product:
@@ -68,7 +68,7 @@ async def alert(name:str, token = Depends(oauth)):
 
 
 @router.delete('/delete/{name}', status_code=200)
-async def delete(name:str, token = Depends(oauth)):
+async def delete(name:str, token = Depends(auth_user)):
     product = products.delete_one({'name': name})
 
     if not product:

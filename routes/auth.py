@@ -26,6 +26,9 @@ def shearUser(key, value):
     user['_id'] = str(user['_id'])
     return UserDB(**user)
 
+def auth_user(token = Depends(oauth)):
+    data = jwt.decode(token, key=SECRET)
+
 
 @router.post('/register', status_code=201)
 async def register(data: UserForm):

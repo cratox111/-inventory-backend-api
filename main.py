@@ -5,8 +5,6 @@ from routes import auth, products
 
 app = FastAPI()
 
-CORS = CORSMiddleware()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],   # dominios permitidos
