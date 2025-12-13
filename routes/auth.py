@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from jose import jwt
+from jose import jwt, JWTError
 import os
 
 from db.models.model_user import UserDB, UserForm, UserResponse
@@ -26,9 +26,31 @@ def shearUser(key, value):
     user['_id'] = str(user['_id'])
     return UserDB(**user)
 
-def auth_user(token = Depends(oauth)):
-    data = jwt.decode(token, key=SECRET)
 
+def auth_user(token: str = Depends(oauth)):
+    try:
+        data = jwt.decode(token, SECRET, algorithms=["HS256"])
+        email = data.get("email")
+
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido"
+            )
+
+        user = shearUser(key="email", value=email)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Usuario no existe"
+            )
+
+        return user  # 👈 mejor retornar el usuario
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado"
+        )
 
 @router.post('/register', status_code=201)
 async def register(data: UserForm):
