@@ -12,12 +12,6 @@ if not DATABASE_URL:
 
 client = MongoClient(DATABASE_URL)
 
-try:
-    client.admin.command("ping")
-    print("✅ Successfully connected to MongoDB")
-except Exception as e:
-    print("❌ MongoDB connection failed:", e)
-    raise
 
 db = client["inventario"]
 
