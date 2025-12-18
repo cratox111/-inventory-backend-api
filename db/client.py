@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
+import certifi
 from dotenv import load_dotenv
 import os
 
@@ -10,7 +11,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set in .env file")
 
-client = MongoClient(DATABASE_URL)
+client = MongoClient(
+    DATABASE_URL,
+    tls=True,
+    tlsCAFile=certifi.where()
+)
 
 
 db = client["inventario"]
