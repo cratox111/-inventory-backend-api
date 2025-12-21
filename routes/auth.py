@@ -14,8 +14,8 @@ load_dotenv()
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 crypt = CryptContext(schemes=['argon2'])
-oauth = OAuth2PasswordBearer('/auth/login')
-SECRET = os.getenv('SECRECT_KEY')
+oauth = OAuth2PasswordBearer(tokenUrl='/auth/login')
+SECRET = os.getenv('SECRET_KEY')
 
 def shearUser(key, value):
     user = users.find_one({key: value})
@@ -30,7 +30,7 @@ def shearUser(key, value):
 def auth_user(token: str = Depends(oauth)):
     try:
         data = jwt.decode(token, SECRET, algorithms=["HS256"])
-        email = data.get("email")
+        email = data.get("sub")
 
         if email is None:
             raise HTTPException(
@@ -72,19 +72,19 @@ async def register(data: UserForm):
 
 @router.post('/login', status_code=200)
 async def login(form: OAuth2PasswordRequestForm = Depends()):
-    
-    if not shearUser('email', form.username):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='User no existe'
-        )
-    
     user = shearUser('email', form.username)
 
-    if not crypt.verify(form.password, user.password):
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail='COntraseña incorrecta'
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas"
+        )
+    
+
+    if not user or not crypt.verify(form.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas"
         )
     
     token = jwt.encode({
@@ -93,6 +93,6 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     }, SECRET, algorithm='HS256')
 
     return {
-        'acces_token': token,
+        'access_token': token,
         'token_type': 'bearer'
     }
